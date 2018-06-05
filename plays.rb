@@ -61,11 +61,17 @@ end
 class Playwright
 
   def self.all
-
+    data = PlayDBConnection.instance.execute("SELECT * FROM playwrights")
+    data.map { |datum| Playwright.new(datum) }
   end
 
   def self.find_by_name(name)
 
+  end
+
+  def initialize(options)
+    @name = options['name']
+    @birth_year = options['birth_year']
   end
 
   def new
@@ -73,7 +79,14 @@ class Playwright
   end
 
   def create
-
+    raise "#{self} already in database" if @id
+    PlayDBConnection.instance.execute(<<-SQL, @title, @year, @playwright_id)
+      INSERT INTO
+        plays (title, year, playwright_id)
+      VALUES
+        (?, ?, ?)
+    SQL
+    @id = PlayDBConnection.instance.last_insert_row_id
   end
 
   def update
